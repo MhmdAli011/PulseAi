@@ -1,247 +1,155 @@
 {% extends "base.html" %}
-
 {% block title %}Dashboard - PulseAI{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <div class="dashboard-header">
-        <div>
-            <h1>Welcome, {{ profile.full_name }}!</h1>
-            <p>Your personalized health dashboard</p>
-        </div>
-        <div class="quick-actions">
-            <a href="{{ url_for('health_profile') }}" class="btn btn-secondary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M18.5 2.5C18.8978 2.1022 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.1022 21.5 2.5C21.8978 2.8978 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.1022 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Edit Profile
-            </a>
-        </div>
-    </div>
+<script src="https://cdn.tailwindcss.com"></script>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-                    <path d="M20 8V14M23 11H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </div>
-            <div class="stat-info">
-                <h3>Age</h3>
-                <p class="stat-value">{{ profile.age }} years</p>
-            </div>
-        </div>
+<div class="min-h-screen flex items-start justify-center p-6"
+     style="background: linear-gradient(160deg,#f0fdf4 0%,#f0f9ff 50%,#f7f7f7 100%);">
 
-        <div class="stat-card">
-            <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21 16V8C20.9996 7.64927 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64927 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.998 12 21.998C12.3511 21.998 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 12C13.6569 12 15 10.6569 15 9C15 7.34315 13.6569 6 12 6C10.3431 6 9 7.34315 9 9C9 10.6569 10.3431 12 12 12Z" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 12V22" stroke="currentColor" stroke-width="2"/>
-                </svg>
-            </div>
-            <div class="stat-info">
-                <h3>Weight</h3>
-                <p class="stat-value">{{ profile.weight }} kg</p>
-            </div>
-        </div>
+    <div class="w-full max-w-3xl bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
 
-        <div class="stat-card">
-            <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </div>
-            <div class="stat-info">
-                <h3>BMI</h3>
-                <p class="stat-value">{{ "%.1f"|format(profile.bmi) if profile.bmi else "N/A" }}</p>
-            </div>
-        </div>
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">
+                PulseAI
+            </h1>
+            <p class="text-gray-500 mt-2">
+                Welcome {{ profile.full_name }} — AI Powered Health Recommendations
+            </p>
 
-        <div class="stat-card">
-            <div class="stat-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22 12H18L15 21L9 3L6 12H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-            <div class="stat-info">
-                <h3>Activity Level</h3>
-                <p class="stat-value">{{ profile.activity_level|replace('_', ' ')|title }}</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="recommendation-section">
-        <div class="section-header">
-            <h2>Get Health Recommendations</h2>
-            <div class="language-selector">
+            <!-- Language -->
+            <div class="flex justify-center gap-3 mt-4">
                 <button class="lang-btn active" data-lang="English">English</button>
-                <button class="lang-btn" data-lang="Hindi">Hindi</button>
-                <button class="lang-btn" data-lang="Gujarati">Gujarati</button>
+                <button class="lang-btn" data-lang="Hindi">हिन्दी</button>
+                <button class="lang-btn" data-lang="Gujarati">ગુજરાતી</button>
             </div>
         </div>
 
-        <div class="recommendation-input-area">
-            <div class="input-group">
-                <input type="text" id="conditionInput" class="form-control" 
-                       placeholder="e.g., 'Common Cold', 'Flu', 'Diabetes'" />
-                <button type="button" id="getRecommendationBtn" class="btn btn-primary">
-                    Get Plan
-                </button>
-            </div>
-            <p class="input-hint">Ask me about specific recipes or exercise routines!</p>
+        <!-- Input -->
+        <div class="flex gap-3 mb-6">
+            <input type="text"
+                   id="conditionInput"
+                   placeholder="Enter a condition — e.g. Diabetes, Flu..."
+                   class="flex-1 p-4 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-400">
+
+            <button id="getRecommendationBtn"
+                    class="px-6 py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-emerald-500 to-cyan-500 hover:shadow-lg transition">
+                Get Plan
+            </button>
         </div>
 
-        <div id="recommendationResult" class="recommendation-result" style="display: none;">
-            <div class="result-header">
-                <h3>Your Recommendation:</h3>
-                <button class="btn-close" onclick="closeRecommendation()">×</button>
+        <!-- Chat Area -->
+        <div class="border-t pt-6">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-1.5 h-5 rounded-full bg-gradient-to-b from-emerald-500 to-cyan-500"></div>
+                <h2 class="font-bold text-gray-700">Conversation</h2>
             </div>
-            <div id="recommendationContent" class="result-content"></div>
+
+            <!-- Loading -->
+            <div id="loadingSpinner" class="hidden text-center py-6 text-gray-400">
+                Generating your personalized plan...
+            </div>
+
+            <!-- Messages -->
+            <div id="chatMessages" class="space-y-4 max-h-[60vh] overflow-y-auto"></div>
         </div>
 
-        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
-            <div class="spinner"></div>
-            <p>Generating your personalized recommendation...</p>
-        </div>
     </div>
-
-    <div class="quick-plans">
-        <h2>Quick Plans</h2>
-        <div class="plans-grid">
-            <a href="{{ url_for('generate_plan', plan_type='meal') }}" class="plan-card">
-                <div class="plan-icon">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 8H22M18 12H22M18 16H22M4 4H10C11.1046 4 12 4.89543 12 6V20C12 21.1046 11.1046 22 10 22H4C2.89543 22 2 21.1046 2 20V6C2 4.89543 2.89543 4 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <h3>Meal Plan</h3>
-                <p>Get a 7-day personalized meal plan</p>
-            </a>
-
-            <a href="{{ url_for('generate_plan', plan_type='workout') }}" class="plan-card">
-                <div class="plan-icon">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6.5 6.5C6.5 8.433 4.933 10 3 10V14C4.933 14 6.5 15.567 6.5 17.5M17.5 6.5C17.5 8.433 19.067 10 21 10V14C19.067 14 17.5 15.567 17.5 17.5M8 12H16M6 3H18V21H6V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <h3>Workout Routine</h3>
-                <p>Get a customized exercise plan</p>
-            </a>
-
-            <a href="{{ url_for('generate_plan', plan_type='wellness') }}" class="plan-card">
-                <div class="plan-icon">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.57831 8.50903 2.99871 7.05 2.99871C5.59096 2.99871 4.19169 3.57831 3.16 4.61C2.1283 5.64169 1.54871 7.04097 1.54871 8.5C1.54871 9.95903 2.1283 11.3583 3.16 12.39L4.22 13.45L12 21.23L19.78 13.45L20.84 12.39C21.351 11.8792 21.7563 11.2728 22.0329 10.6053C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.06211 22.0329 6.39468C21.7563 5.72725 21.351 5.12081 20.84 4.61V4.61Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <h3>Wellness Plan</h3>
-                <p>Comprehensive health and wellness guide</p>
-            </a>
-        </div>
-    </div>
-
-    {% if recommendations %}
-    <div class="recent-section">
-        <h2>Recent Recommendations</h2>
-        <div class="recommendations-list">
-            {% for rec in recommendations %}
-            <div class="recommendation-card">
-                <div class="rec-header">
-                    <h3>{{ rec.condition }}</h3>
-                    <span class="rec-date">{{ rec.created_at.strftime('%b %d, %Y') }}</span>
-                </div>
-                <div class="rec-preview">
-                    {{ rec.recommendation_text[:200] }}...
-                </div>
-                <a href="{{ url_for('history') }}" class="btn btn-sm btn-secondary">View Full</a>
-            </div>
-            {% endfor %}
-        </div>
-        <a href="{{ url_for('history') }}" class="view-all-link">View All Recommendations →</a>
-    </div>
-    {% endif %}
 </div>
+
+<style>
+.lang-btn{
+    padding:6px 16px;
+    border:1px solid #e5e7eb;
+    border-radius:20px;
+    font-weight:600;
+    color:#6b7280;
+}
+.lang-btn.active{
+    background:linear-gradient(135deg,#10b981,#06b6d4);
+    color:white;
+    border:none;
+}
+.user-msg{
+    align-self:flex-end;
+    background:linear-gradient(135deg,#10b981,#06b6d4);
+    color:white;
+    padding:10px 16px;
+    border-radius:16px 16px 4px 16px;
+    max-width:80%;
+}
+.bot-msg{
+    background:#f9fafb;
+    border:1px solid #f3f4f6;
+    padding:16px;
+    border-radius:4px 16px 16px 16px;
+}
+</style>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let selectedLanguage = 'English';
-    
-    // Language selector
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            selectedLanguage = this.dataset.lang;
-        });
-    });
-    
-    // Get recommendation
-    document.getElementById('getRecommendationBtn').addEventListener('click', function() {
-        const condition = document.getElementById('conditionInput').value.trim();
-        
-        if (!condition) {
-            alert('Please enter a condition or query');
-            return;
-        }
-        
-        // Show loading
-        document.getElementById('loadingSpinner').style.display = 'block';
-        document.getElementById('recommendationResult').style.display = 'none';
-        
-        // Make API call
-        fetch('{{ url_for("get_recommendation") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                condition: condition,
-                language: selectedLanguage
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('loadingSpinner').style.display = 'none';
-            
-            if (data.error) {
-                alert('Error: ' + data.error);
-                return;
-            }
-            
-            // Display recommendation
-            document.getElementById('recommendationContent').innerHTML = 
-                '<h4>' + data.condition + '</h4>' +
-                '<div class="recommendation-text">' + 
-                data.recommendation.replace(/\n/g, '<br>') + 
-                '</div>';
-            document.getElementById('recommendationResult').style.display = 'block';
-            
-            // Clear input
-            document.getElementById('conditionInput').value = '';
-        })
-        .catch(error => {
-            document.getElementById('loadingSpinner').style.display = 'none';
-            alert('An error occurred: ' + error);
-        });
-    });
-    
-    // Enter key support
-    document.getElementById('conditionInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            document.getElementById('getRecommendationBtn').click();
-        }
+let selectedLanguage = "English";
+
+document.querySelectorAll(".lang-btn").forEach(btn=>{
+    btn.addEventListener("click",function(){
+        document.querySelectorAll(".lang-btn").forEach(b=>b.classList.remove("active"));
+        this.classList.add("active");
+        selectedLanguage = this.dataset.lang;
     });
 });
 
-function closeRecommendation() {
-    document.getElementById('recommendationResult').style.display = 'none';
+function addUserMessage(text){
+    const div = document.createElement("div");
+    div.className="flex justify-end";
+    div.innerHTML = `<div class="user-msg">${text}</div>`;
+    document.getElementById("chatMessages").appendChild(div);
 }
+
+function addBotMessage(text){
+    const div = document.createElement("div");
+    div.className="flex justify-start";
+    div.innerHTML = `<div class="bot-msg">${text.replace(/\n/g,"<br>")}</div>`;
+    document.getElementById("chatMessages").appendChild(div);
+}
+
+document.getElementById("getRecommendationBtn").addEventListener("click",function(){
+
+    const condition = document.getElementById("conditionInput").value.trim();
+    if(!condition){
+        alert("Please enter a condition");
+        return;
+    }
+
+    addUserMessage(condition);
+    document.getElementById("conditionInput").value="";
+    document.getElementById("loadingSpinner").classList.remove("hidden");
+
+    ffetch('{{ url_for("stream_recommendation") }}',{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+            disease: condition,
+            language: selectedLanguage
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        document.getElementById("loadingSpinner").classList.add("hidden");
+
+        if(data.error){
+            addBotMessage("Error: "+data.error);
+            return;
+        }
+
+        addBotMessage(data.recommendation);
+    })
+    .catch(err=>{
+        document.getElementById("loadingSpinner").classList.add("hidden");
+        addBotMessage("Something went wrong.");
+    });
+});
 </script>
 {% endblock %}
