@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Health Profile - PulseAI{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>{% if profile %}Update{% else %}Complete{% endif %} Your Health Profile</h1>
+        <p>Help us personalize your health recommendations by providing your health information.</p>
+    </div>
+
+    <form method="POST" class="profile-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-section">
+            <h2 class="section-heading">Personal Information</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.full_name.label }}
+                    {{ form.full_name(class="form-control") }}
+                    {% if form.full_name.errors %}
+                        <div class="form-errors">
+                            {% for error in form.full_name.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.age.label }}
+                    {{ form.age(class="form-control", type="number") }}
+                    {% if form.age.errors %}
+                        <div class="form-errors">
+                            {% for error in form.age.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.gender.label }}
+                    {{ form.gender(class="form-control") }}
+                    {% if form.gender.errors %}
+                        <div class="form-errors">
+                            {% for error in form.gender.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-heading">Physical Measurements</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.height.label }}
+                    {{ form.height(class="form-control", type="number", step="0.1") }}
+                    {% if form.height.errors %}
+                        <div class="form-errors">
+                            {% for error in form.height.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.weight.label }}
+                    {{ form.weight(class="form-control", type="number", step="0.1") }}
+                    {% if form.weight.errors %}
+                        <div class="form-errors">
+                            {% for error in form.weight.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-heading">Health Conditions</h2>
+            
+            <div class="form-group">
+                {{ form.health_conditions.label }}
+                {{ form.health_conditions(class="form-control", rows="3", placeholder="e.g., Diabetes, Hypertension, Asthma (leave blank if none)") }}
+                {% if form.health_conditions.errors %}
+                    <div class="form-errors">
+                        {% for error in form.health_conditions.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.allergies.label }}
+                {{ form.allergies(class="form-control", rows="3", placeholder="e.g., Peanuts, Dairy, Shellfish (leave blank if none)") }}
+                {% if form.allergies.errors %}
+                    <div class="form-errors">
+                        {% for error in form.allergies.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.medications.label }}
+                {{ form.medications(class="form-control", rows="3", placeholder="e.g., Metformin, Aspirin (leave blank if none)") }}
+                {% if form.medications.errors %}
+                    <div class="form-errors">
+                        {% for error in form.medications.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-heading">Lifestyle</h2>
+            
+            <div class="form-group">
+                {{ form.activity_level.label }}
+                {{ form.activity_level(class="form-control") }}
+                {% if form.activity_level.errors %}
+                    <div class="form-errors">
+                        {% for error in form.activity_level.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.dietary_preference.label }}
+                {{ form.dietary_preference(class="form-control") }}
+                {% if form.dietary_preference.errors %}
+                    <div class="form-errors">
+                        {% for error in form.dietary_preference.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.sleep_hours.label }}
+                    {{ form.sleep_hours(class="form-control", type="number", step="0.5") }}
+                    {% if form.sleep_hours.errors %}
+                        <div class="form-errors">
+                            {% for error in form.sleep_hours.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.water_intake.label }}
+                    {{ form.water_intake(class="form-control", type="number", step="0.5") }}
+                    {% if form.water_intake.errors %}
+                        <div class="form-errors">
+                            {% for error in form.water_intake.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-heading">Health Goals</h2>
+            
+            <div class="form-group">
+                {{ form.health_goal.label }}
+                {{ form.health_goal(class="form-control") }}
+                {% if form.health_goal.errors %}
+                    <div class="form-errors">
+                        {% for error in form.health_goal.errors %}
+                            <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-large">
+                {% if profile %}Update Profile{% else %}Save Profile{% endif %}
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

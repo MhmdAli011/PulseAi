@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ plan_type|title }} Plan - PulseAI{% endblock %}
+
+{% block content %}
+<div class="plan-view-container">
+    <div class="plan-header">
+        <a href="{{ url_for('dashboard') }}" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Back to Dashboard
+        </a>
+        <h1>Your {{ plan_type|replace('_', ' ')|title }} Plan</h1>
+        <p>Generated just for you based on your health profile</p>
+    </div>
+
+    <div class="plan-content">
+        <div class="plan-card">
+            {{ plan|safe }}
+        </div>
+    </div>
+
+    <div class="plan-actions">
+        <button onclick="window.print()" class="btn btn-secondary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M6 9V2H18V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 18H4C3.46957 18 2.96086 17.7893 2.58579 17.4142C2.21071 17.0391 2 16.5304 2 16V11C2 10.4696 2.21071 9.96086 2.58579 9.58579C2.96086 9.21071 3.46957 9 4 9H20C20.5304 9 21.0391 9.21071 21.4142 9.58579C21.7893 9.96086 22 10.4696 22 11V16C22 16.5304 21.7893 17.0391 21.4142 17.4142C21.0391 17.7893 20.5304 18 20 18H18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18 14H6V22H18V14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Print Plan
+        </button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Generate Another Plan</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+    .navbar, .footer, .plan-actions, .back-link {
+        display: none !important;
+    }
+    
+    .plan-content {
+        margin-top: 0;
+    }
+}
+</style>
+{% endblock %}
