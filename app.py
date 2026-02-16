@@ -7,7 +7,7 @@ from forms import SignUpForm, SignInForm, HealthProfileForm
 from groq_service import GroqService
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
 import json
 
 # Load environment variables
@@ -36,21 +36,14 @@ except ValueError as e:
 
 # ==================== Initialize Gemini API ====================
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("API_KEY")
-GEMINI_MODEL = None
+GEMINI_CLIENT = None
 
 if GEMINI_API_KEY:
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        PREFERRED_MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
-        for model_name in PREFERRED_MODELS:
-            try:
-                GEMINI_MODEL = genai.GenerativeModel(model_name=model_name)
-                print(f"✅ Gemini model '{model_name}' initialized successfully.")
-                break
-            except Exception:
-                continue
+        GEMINI_CLIENT = genai.Client(api_key=GEMINI_API_KEY)
+        print("✅ Gemini client initialized successfully.")
     except Exception as e:
-        print(f"⚠️ Gemini API initialization failed: {e}")
+        print(f"⚠️ Gemini initialization failed: {e}")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -150,72 +143,90 @@ def dashboard():
 @app.route('/api/stream', methods=['POST'])
 @login_required
 def stream_recommendation():
+
+    if not GEMINI_CLIENT:
+        return jsonify({'error': 'Gemini not initialized'}), 500
+
     try:
         data = request.get_json()
         disease = data.get('disease', '').strip()
         language = data.get('language', 'English')
-        
-        if not GEMINI_MODEL:
-            return jsonify({'error': 'Gemini API not configured'}), 500
 
         profile = HealthProfile.query.filter_by(user_id=current_user.id).first()
-        
+        if not profile:
+            return jsonify({'error': 'Profile missing'}), 400
+
         prompt = f"""
-        You are PulseAI. Respond ENTIRELY in {language}.
-        User Profile: Age {profile.age}, Gender {profile.gender}, Conditions: {profile.health_conditions or 'None'}.
-        Diet Preference: {profile.dietary_preference}.
-        Task: Provide a health/diet plan for {disease}.
-        Requirements:
-        1. Bold section titles. 
-        2. All food MUST be Indian cuisine (e.g., Dal, Sabzi, Roti, Poha).
-        3. Include a Markdown table for a 1-day diet plan.
-        """
+Respond entirely in {language}.
+Provide an Indian diet plan for {disease}.
+Age: {profile.age}
+Gender: {profile.gender}
+Conditions: {profile.health_conditions or 'None'}
+Include bold headings and 1-day table.
+"""
 
-        def generate():
-            full_text = ""
-            response = GEMINI_MODEL.generate_content(prompt, stream=True)
-            for chunk in response:
-                if chunk.text:
-                    full_text += chunk.text
-                    yield f"data: {json.dumps({'text': chunk.text})}\n\n"
-            
-            # Save completed recommendation to DB
-            with app.app_context():
-                rec = Recommendation(
-                    user_id=current_user.id,
-                    condition=disease,
-                    recommendation_text=full_text,
-                    language=language
-                )
-                db.session.add(rec)
-                db.session.commit()
-            yield f"data: {json.dumps({'done': True})}\n\n"
+        response = GEMINI_CLIENT.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
 
-        return Response(stream_with_context(generate()), mimetype='text/event-stream')
+        rec = Recommendation(
+            user_id=current_user.id,
+            condition=disease,
+            recommendation_text=response.text,
+            language=language
+        )
+        db.session.add(rec)
+        db.session.commit()
+
+        return jsonify({
+            "recommendation": response.text
+        })
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+
 
 @app.route('/api/chat', methods=['POST'])
 @login_required
 def chat_stream():
+
+    if not GEMINI_CLIENT:
+        return jsonify({'error': 'Gemini not initialized'}), 500
+
     try:
         data = request.get_json()
         messages = data.get('messages', [])
         language = data.get('language', 'English')
-        
-        history = []
-        for msg in messages[:-1]:
-            history.append({'role': msg['role'], 'parts': [{'text': msg['text']}]})
 
-        def generate():
-            chat = GEMINI_MODEL.start_chat(history=history)
-            response = chat.send_message(f"[Respond in {language}] " + messages[-1]['text'], stream=True)
-            for chunk in response:
-                if chunk.text:
-                    yield f"data: {json.dumps({'text': chunk.text})}\n\n"
-            yield f"data: {json.dumps({'done': True})}\n\n"
+        if not messages:
+            return jsonify({'error': 'No messages provided'}), 400
 
-        return Response(stream_with_context(generate()), mimetype='text/event-stream')
+        # Build conversation text
+        conversation_text = ""
+        for msg in messages:
+            conversation_text += f"{msg['role']}: {msg['text']}\n"
+
+        prompt = f"""
+Respond entirely in {language}.
+
+Conversation so far:
+{conversation_text}
+
+Continue the conversation.
+"""
+
+        response = GEMINI_CLIENT.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
+
+        return jsonify({
+            "reply": response.text
+        })
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

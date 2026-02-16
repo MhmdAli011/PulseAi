@@ -127,7 +127,7 @@ document.getElementById("getRecommendationBtn").addEventListener("click",functio
     document.getElementById("conditionInput").value="";
     document.getElementById("loadingSpinner").classList.remove("hidden");
 
-    ffetch('{{ url_for("stream_recommendation") }}',{
+    fetch('{{ url_for("stream_recommendation") }}',{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
