@@ -15,8 +15,8 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationship with health profile
-    health_profile = db.relationship('HealthProfile', backref='user', uselist=False, cascade='all, delete-orphan')
-    recommendations = db.relationship('Recommendation', backref='user', cascade='all, delete-orphan')
+    health_profile = db.relationship('HealthProfile', back_populates='user', uselist=False, cascade='all, delete-orphan')
+    recommendations = db.relationship('Recommendation', back_populates='user', cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Hash and set the user password"""
@@ -35,7 +35,7 @@ class HealthProfile(db.Model):
     __tablename__ = 'health_profiles'
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True, index=True)
     
     # Personal Information
     full_name = db.Column(db.String(100), nullable=False)
@@ -65,6 +65,9 @@ class HealthProfile(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # Relationship back to user
+    user = db.relationship('User', back_populates='health_profile')
+
     def calculate_bmi(self):
         """Calculate BMI from height and weight"""
         if self.height and self.weight:
@@ -80,7 +83,7 @@ class Recommendation(db.Model):
     __tablename__ = 'recommendations'
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     
     # Condition/Query
     condition = db.Column(db.String(200), nullable=False)
@@ -92,5 +95,8 @@ class Recommendation(db.Model):
     language = db.Column(db.String(20), default='English')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Relationship back to user
+    user = db.relationship('User', back_populates='recommendations')
+
     def __repr__(self):
         return f'<Recommendation {self.condition}>'

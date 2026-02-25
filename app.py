@@ -47,7 +47,7 @@ with app.app_context():
 # ==================== User Loader ====================
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 # ==================== Authentication Routes ====================
@@ -122,6 +122,7 @@ def health_profile():
                 db.session.add(profile)
 
             form.populate_obj(profile)
+            # Atomic update of dependent field
             profile.calculate_bmi()
             db.session.commit()
 
@@ -130,7 +131,8 @@ def health_profile():
 
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            print(f"❌ Profile Update Error: {e}")
+            flash('Error saving profile. Please ensure data is valid.', 'error')
 
     if profile and request.method == 'GET':
         form.process(obj=profile)
@@ -195,14 +197,18 @@ def stream_recommendation():
             
             # Save to database after complete generation
             with app.app_context():
-                rec = Recommendation(
-                    user_id=current_user.id,
-                    condition=disease,
-                    recommendation_text=collected_text,
-                    language=language
-                )
-                db.session.add(rec)
-                db.session.commit()
+                try:
+                    rec = Recommendation(
+                        user_id=current_user.id,
+                        condition=disease,
+                        recommendation_text=collected_text,
+                        language=language
+                    )
+                    db.session.add(rec)
+                    db.session.commit()
+                except Exception as db_err:
+                    db.session.rollback()
+                    print(f"❌ Failed to save recommendation to DB: {db_err}")
             
             yield f"data: {json.dumps({'done': True})}\n\n"
 
@@ -293,7 +299,9 @@ def history():
 @app.route('/delete-recommendation/<int:rec_id>', methods=['POST'])
 @login_required
 def delete_recommendation(rec_id):
-    rec = Recommendation.query.get_or_404(rec_id)
+    rec = db.session.get(Recommendation, rec_id)
+    if not rec:
+        return jsonify({'error': 'Not found'}), 404
 
     if rec.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
