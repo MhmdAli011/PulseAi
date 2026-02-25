@@ -6,7 +6,7 @@ from flask_cors import CORS
 from config import Config
 from models import db, User, HealthProfile, Recommendation
 from forms import SignUpForm, SignInForm, HealthProfileForm
-from groq_service import GroqService
+from ai_service import AIService
 import os
 from dotenv import load_dotenv
 
@@ -27,13 +27,21 @@ login_manager.init_app(app)
 login_manager.login_view = 'signin'
 login_manager.login_message = 'Please log in to access this page.'
 
-# ==================== Initialize Groq Service ====================
+# ==================== Initialize AI Service ====================
 try:
-    groq_service = GroqService()
-    print("✅ Groq initialized successfully.")
+    ai_service = AIService()
+    print("✅ AI Service initialized successfully.")
 except Exception as e:
-    print(f"⚠️ Groq initialization failed: {e}")
-    groq_service = None
+    print(f"⚠️ AI Service initialization failed: {e}")
+    ai_service = None
+
+# ==================== Ensure DB Tables Exist ====================
+with app.app_context():
+    # Make sure instance folder exists for SQLite
+    if not os.path.exists('instance'):
+        os.makedirs('instance')
+    db.create_all()
+    print("📦 Database initialized.")
 
 
 # ==================== User Loader ====================
@@ -159,8 +167,8 @@ def dashboard():
 @app.route('/api/stream', methods=['POST'])
 @login_required
 def stream_recommendation():
-    if not groq_service:
-        return jsonify({'error': 'Groq service not available'}), 500
+    if not ai_service:
+        return jsonify({'error': 'AI service not available'}), 500
 
     data = request.get_json()
     disease = data.get('disease', '').strip()
@@ -172,8 +180,8 @@ def stream_recommendation():
 
     def generate():
         try:
-            # Stream response from Groq
-            stream = groq_service.generate_health_recommendation_stream(
+            # Stream response from AI service (Gemini primary, Groq fallback)
+            stream = ai_service.generate_health_recommendation_stream(
                 condition=disease,
                 health_profile=profile,
                 language=language
@@ -217,8 +225,8 @@ def stream_recommendation():
 @app.route('/api/chat', methods=['POST'])
 @login_required
 def chat_stream():
-    if not groq_service:
-        return jsonify({'error': 'Groq service not available'}), 500
+    if not ai_service:
+        return jsonify({'error': 'AI service not available'}), 500
 
     data = request.get_json()
     messages = data.get('messages', [])
@@ -241,7 +249,7 @@ def chat_stream():
             # Ideally, detailed chat logic would be a separate method, but this adapts the existing one
             full_prompt = f"{conversation_context}\nUser asks: {last_user_msg}"
             
-            stream = groq_service.generate_health_recommendation_stream(
+            stream = ai_service.generate_health_recommendation_stream(
                 condition=full_prompt,
                 health_profile=None, # Context already in messages
                 language=language
@@ -299,6 +307,4 @@ def delete_recommendation(rec_id):
 # ==================== Run ====================
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True, host='0.0.0.0', port=5000)
