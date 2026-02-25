@@ -3,14 +3,22 @@ import os
 from config import Config
 
 class GroqService:
-    """Service class for interacting with Groq API"""
-    
     def __init__(self):
         self.api_key = Config.GROQ_API_KEY
         if not self.api_key:
-            raise ValueError("GROQ_API_KEY is not set in environment variables")
+            raise ValueError("GROQ_API_KEY is not set")
+
         self.client = Groq(api_key=self.api_key)
-        self.model = "mixtral-8x7b-32768"  # Using Mixtral model
+
+        # 🔥 Auto-select first available model
+        models = self.client.models.list()
+        if not models.data:
+            raise ValueError("No available Groq models found")
+
+        self.model = models.data[0].id
+        print(f"✅ Using Groq model: {self.model}")
+
+
     
     def generate_health_recommendation(self, condition, health_profile=None, language='English'):
         """
@@ -101,6 +109,95 @@ Format the response in a clear, organized manner with proper headings and bullet
         except Exception as e:
             print(f"Error generating recommendation: {str(e)}")
             return f"Sorry, I encountered an error while generating recommendations. Please try again later. Error: {str(e)}"
+
+    def generate_health_recommendation_stream(self, condition, health_profile=None, language='English'):
+        """
+        Stream health and diet recommendations based on condition and user profile
+        """
+        try:
+            # Build context from health profile if available
+            context = ""
+            if health_profile:
+                context = f"""
+User Health Profile:
+- Name: {health_profile.full_name}
+- Age: {health_profile.age} years
+- Gender: {health_profile.gender}
+- Height: {health_profile.height} cm
+- Weight: {health_profile.weight} kg
+- BMI: {health_profile.bmi if health_profile.bmi else 'Not calculated'}
+- Health Conditions: {health_profile.health_conditions or 'None'}
+- Allergies: {health_profile.allergies or 'None'}
+- Current Medications: {health_profile.medications or 'None'}
+- Activity Level: {health_profile.activity_level}
+- Dietary Preference: {health_profile.dietary_preference}
+- Sleep Hours: {health_profile.sleep_hours} hours
+- Water Intake: {health_profile.water_intake} glasses/day
+- Health Goal: {health_profile.health_goal}
+"""
+            
+            # Create the prompt
+            prompt = f"""You are PulseAI, an AI-powered health and diet recommendation assistant.
+
+{context}
+
+User Query/Condition: {condition}
+
+**IMPORTANT: Respond entirely in {language}.**
+
+Format the response in clean **Markdown** with bold section titles.
+All diet suggestions must be based on **Indian cuisine and Indian food items** only (unless user requests otherwise).
+
+Sections:
+
+### 🚫 Things to Avoid
+- Each bullet with a short explanation.
+
+### ✅ Recovery Actions
+- Each bullet with a short explanation.
+
+### 📅 Daily Life Advice
+- Each bullet with a short explanation.
+
+### 🍽️ Sample 1-Day Indian Diet Plan for Recovery
+Present this as a **Markdown table** with columns: Meal, Food Items, Notes.
+Include rows for: Early Morning, Breakfast, Mid-Morning Snack, Lunch, Evening Snack, Dinner, Before Bed.
+All items must be Indian foods (e.g. dal, roti, khichdi, upma, poha, idli, dosa, sabzi, raita, curd, buttermilk, etc.)
+
+Make the recommendations:
+- Personalized based on the user's profile (if provided)
+- Practical and easy to implement
+- Evidence-based and safe
+- Culturally appropriate for {language} speakers
+- Well-structured and easy to read
+"""
+
+            # Make API call to Groq with streaming
+            stream = self.client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are PulseAI, a helpful and knowledgeable health and nutrition assistant. Provide accurate, personalized health advice while always reminding users to consult healthcare professionals for serious concerns."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                model=self.model,
+                temperature=0.7,
+                max_tokens=2000,
+                top_p=0.9,
+                stream=True
+            )
+            
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    yield chunk.choices[0].delta.content
+            
+        except Exception as e:
+            print(f"Error yielding recommendation stream: {str(e)}")
+            yield f"Error: {str(e)}"
     
     def generate_specific_plan(self, plan_type, health_profile):
         """

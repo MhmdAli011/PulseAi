@@ -3,153 +3,872 @@
 
 {% block content %}
 <script src="https://cdn.tailwindcss.com"></script>
-
-<div class="min-h-screen flex items-start justify-center p-6"
-     style="background: linear-gradient(160deg,#f0fdf4 0%,#f0f9ff 50%,#f7f7f7 100%);">
-
-    <div class="w-full max-w-3xl bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
-
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">
-                PulseAI
-            </h1>
-            <p class="text-gray-500 mt-2">
-                Welcome {{ profile.full_name }} — AI Powered Health Recommendations
-            </p>
-
-            <!-- Language -->
-            <div class="flex justify-center gap-3 mt-4">
-                <button class="lang-btn active" data-lang="English">English</button>
-                <button class="lang-btn" data-lang="Hindi">हिन्दी</button>
-                <button class="lang-btn" data-lang="Gujarati">ગુજરાતી</button>
-            </div>
-        </div>
-
-        <!-- Input -->
-        <div class="flex gap-3 mb-6">
-            <input type="text"
-                   id="conditionInput"
-                   placeholder="Enter a condition — e.g. Diabetes, Flu..."
-                   class="flex-1 p-4 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-400">
-
-            <button id="getRecommendationBtn"
-                    class="px-6 py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-emerald-500 to-cyan-500 hover:shadow-lg transition">
-                Get Plan
-            </button>
-        </div>
-
-        <!-- Chat Area -->
-        <div class="border-t pt-6">
-            <div class="flex items-center gap-2 mb-3">
-                <div class="w-1.5 h-5 rounded-full bg-gradient-to-b from-emerald-500 to-cyan-500"></div>
-                <h2 class="font-bold text-gray-700">Conversation</h2>
-            </div>
-
-            <!-- Loading -->
-            <div id="loadingSpinner" class="hidden text-center py-6 text-gray-400">
-                Generating your personalized plan...
-            </div>
-
-            <!-- Messages -->
-            <div id="chatMessages" class="space-y-4 max-h-[60vh] overflow-y-auto"></div>
-        </div>
-
-    </div>
-</div>
-
 <style>
-.lang-btn{
-    padding:6px 16px;
-    border:1px solid #e5e7eb;
-    border-radius:20px;
-    font-weight:600;
-    color:#6b7280;
-}
-.lang-btn.active{
-    background:linear-gradient(135deg,#10b981,#06b6d4);
-    color:white;
-    border:none;
-}
-.user-msg{
-    align-self:flex-end;
-    background:linear-gradient(135deg,#10b981,#06b6d4);
-    color:white;
-    padding:10px 16px;
-    border-radius:16px 16px 4px 16px;
-    max-width:80%;
-}
-.bot-msg{
-    background:#f9fafb;
-    border:1px solid #f3f4f6;
-    padding:16px;
-    border-radius:4px 16px 16px 16px;
-}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+    .pulse-gradient {
+        background: linear-gradient(135deg, #10b981, #06b6d4);
+    }
+
+    .pulse-gradient-text {
+        background: linear-gradient(135deg, #10b981, #06b6d4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Card elevation */
+    .main-card {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Input glow on focus */
+    .input-field {
+        transition: all 0.25s ease;
+    }
+
+    .input-field:focus {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+
+    /* Button */
+    .btn-primary {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-primary:hover::after {
+        left: 100%;
+    }
+
+    .btn-primary:hover {
+        box-shadow: 0 6px 24px rgba(16, 185, 129, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Loading dots */
+    .loading-dot {
+        animation: dotBounce 1.2s ease-in-out infinite;
+    }
+
+    .dot-2 {
+        animation-delay: 0.15s;
+    }
+
+    .dot-3 {
+        animation-delay: 0.3s;
+    }
+
+    @keyframes dotBounce {
+
+        0%,
+        80%,
+        100% {
+            transform: scale(0.7);
+            opacity: 0.3;
+        }
+
+        40% {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+    }
+
+    /* Scrollbar */
+    .response-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .response-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .response-scroll::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 20px;
+    }
+
+    .response-scroll::-webkit-scrollbar-thumb:hover {
+        background-color: #9ca3af;
+    }
+
+    /* Streaming cursor */
+    .streaming-cursor::after {
+        content: '▌';
+        display: inline;
+        animation: blink 0.7s step-end infinite;
+        color: #10b981;
+        font-weight: bold;
+    }
+
+    @keyframes blink {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0;
+        }
+    }
+
+    /* ===== CHAT MESSAGES ===== */
+    .chat-area {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .chat-msg {
+        max-width: 100%;
+        animation: msgAppear 0.3s ease;
+    }
+
+    @keyframes msgAppear {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .chat-msg-user {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #10b981, #06b6d4);
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 16px 16px 4px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 80%;
+        word-break: break-word;
+    }
+
+    .chat-msg-bot {
+        align-self: flex-start;
+        width: 100%;
+    }
+
+    .bot-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #10b981;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .bot-content {
+        background: #f9fafb;
+        border: 1px solid #f3f4f6;
+        border-radius: 4px 16px 16px 16px;
+        padding: 16px;
+        font-size: 14px;
+    }
+
+    /* Response area typography */
+    .response-area h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f766e;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .response-area h3:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+    }
+
+    .response-area h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+        margin-top: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .response-area p {
+        color: #4b5563;
+        line-height: 1.7;
+        margin-bottom: 0.4rem;
+    }
+
+    .response-area strong {
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .response-area ul {
+        margin: 0.25rem 0 0.5rem 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .response-area li {
+        position: relative;
+        padding-left: 1.1rem;
+        margin-bottom: 0.35rem;
+        color: #4b5563;
+        line-height: 1.65;
+    }
+
+    .response-area li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.55rem;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #10b981;
+    }
+
+    /* Table (diet chart) styling */
+    .response-area table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0.75rem 0;
+        font-size: 0.85rem;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+    }
+
+    .response-area thead {
+        background: linear-gradient(135deg, #10b981, #06b6d4);
+    }
+
+    .response-area th {
+        padding: 10px 14px;
+        text-align: left;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.82rem;
+        letter-spacing: 0.3px;
+    }
+
+    .response-area td {
+        padding: 10px 14px;
+        color: #374151;
+        border-bottom: 1px solid #f3f4f6;
+        line-height: 1.5;
+    }
+
+    .response-area tbody tr:nth-child(even) {
+        background: #f9fafb;
+    }
+
+    .response-area tbody tr:hover {
+        background: #f0fdf4;
+    }
+
+    .response-area td strong {
+        color: #0f766e;
+    }
+
+    /* Follow-up bar */
+    .followup-bar {
+        display: none;
+        margin-top: 12px;
+        gap: 8px;
+    }
+
+    .followup-bar.visible {
+        display: flex;
+    }
+
+    .followup-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 14px;
+        font-family: inherit;
+        color: #374151;
+        outline: none;
+        background: #fff;
+        transition: all 0.25s ease;
+    }
+
+    .followup-input:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+    }
+
+    .followup-input::placeholder {
+        color: #9ca3af;
+    }
+
+    .followup-send {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #10b981, #06b6d4);
+        color: #fff;
+        font-weight: 600;
+        font-size: 14px;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+    }
+
+    .followup-send:hover {
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+        transform: translateY(-1px);
+    }
+
+    .followup-send:active {
+        transform: scale(0.97);
+    }
+
+    .followup-send:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    /* New chat button */
+    .new-chat-btn {
+        display: none;
+        margin-top: 10px;
+        padding: 8px 16px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .new-chat-btn.visible {
+        display: inline-block;
+    }
+
+    .new-chat-btn:hover {
+        border-color: #10b981;
+        color: #10b981;
+    }
+
+    /* Language selector */
+    .lang-selector {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .lang-btn {
+        padding: 6px 18px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 20px;
+        background: #fff;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    .lang-btn:hover {
+        border-color: #10b981;
+        color: #10b981;
+    }
+
+    .lang-btn.active {
+        background: linear-gradient(135deg, #10b981, #06b6d4);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
 </style>
 
+<div class="min-h-screen flex items-start justify-center p-4 sm:p-8"
+    style="background: linear-gradient(160deg, #f0fdf4 0%, #f0f9ff 50%, #f7f7f7 100%);">
+    <div class="main-card w-full max-w-3xl bg-white rounded-2xl overflow-hidden p-7 md:p-10 border border-gray-100/80">
+
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl font-extrabold pulse-gradient-text tracking-tight">
+                PulseAI
+            </h1>
+            <p class="text-gray-400 mt-1.5 text-base font-medium tracking-wide">
+                AI-Powered Health & Diet Recommendations
+            </p>
+            <p class="text-sm text-gray-400 mt-1">Welcome, {{ profile.full_name }}</p>
+
+            <!-- Language Selector -->
+            <div class="lang-selector" id="lang-selector">
+                <button class="lang-btn active" data-lang="English" onclick="selectLanguage(this)">English</button>
+                <button class="lang-btn" data-lang="Hindi" onclick="selectLanguage(this)">हिन्दी</button>
+                <button class="lang-btn" data-lang="Gujarati" onclick="selectLanguage(this)">ગુજરાતી</button>
+            </div>
+        </header>
+
+        <!-- Initial Input Section -->
+        <section id="initial-input-section" class="mb-7">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="disease-input"
+                    placeholder="Enter a condition — e.g. Hypertension, Flu, Anemia..."
+                    class="input-field flex-grow p-4 border border-gray-200 rounded-xl focus:ring-0 focus:border-teal-400 text-base text-gray-700 placeholder-gray-400 bg-gray-50/50 outline-none"
+                    onkeypress="if(event.key === 'Enter') generateRecommendations()">
+                <button id="submit-btn" onclick="generateRecommendations()"
+                    class="btn-primary pulse-gradient text-white font-semibold py-4 px-7 rounded-xl shadow-md text-base">
+                    Get Plan
+                </button>
+            </div>
+            <p id="error-message" class="text-red-500 mt-2 text-sm hidden"></p>
+        </section>
+
+        <!-- Chat / Output Section -->
+        <section>
+            <div class="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                <div class="w-1.5 h-5 rounded-full pulse-gradient"></div>
+                <h2 class="text-lg font-bold text-gray-700">Conversation</h2>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="hidden text-center py-14">
+                <div class="flex justify-center items-center space-x-2 mb-4">
+                    <div class="w-3 h-3 bg-teal-500 rounded-full loading-dot"></div>
+                    <div class="w-3 h-3 bg-teal-500 rounded-full loading-dot dot-2"></div>
+                    <div class="w-3 h-3 bg-teal-500 rounded-full loading-dot dot-3"></div>
+                </div>
+                <p class="text-gray-400 text-sm font-medium">Generating your personalized plan...</p>
+            </div>
+
+            <!-- Chat Container (scrollable) -->
+            <div id="chat-container" class="hidden max-h-[65vh] overflow-y-auto response-scroll rounded-xl">
+                <div id="chat-messages" class="chat-area p-2">
+                    <!-- Messages will be appended here -->
+                </div>
+            </div>
+
+            <!-- Follow-up Input Bar -->
+            <div id="followup-bar" class="followup-bar">
+                <input type="text" id="followup-input" class="followup-input" placeholder="Ask a follow-up question..."
+                    onkeypress="if(event.key === 'Enter') sendFollowup()">
+                <button id="followup-send" class="followup-send" onclick="sendFollowup()">Send</button>
+            </div>
+
+            <!-- New Chat Button -->
+            <button id="new-chat-btn" class="new-chat-btn" onclick="startNewChat()">
+                ✕ New Chat
+            </button>
+
+        </section>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-let selectedLanguage = "English";
+    const STREAM_API_URL = '/api/stream';
+    const CHAT_API_URL = '/api/chat';
 
-document.querySelectorAll(".lang-btn").forEach(btn=>{
-    btn.addEventListener("click",function(){
-        document.querySelectorAll(".lang-btn").forEach(b=>b.classList.remove("active"));
-        this.classList.add("active");
-        selectedLanguage = this.dataset.lang;
-    });
-});
+    const inputEl = document.getElementById('disease-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const chatContainer = document.getElementById('chat-container');
+    const chatMessages = document.getElementById('chat-messages');
+    const errorMessage = document.getElementById('error-message');
+    const initialInputSection = document.getElementById('initial-input-section');
+    const followupBar = document.getElementById('followup-bar');
+    const followupInput = document.getElementById('followup-input');
+    const followupSend = document.getElementById('followup-send');
+    const newChatBtn = document.getElementById('new-chat-btn');
 
-function addUserMessage(text){
-    const div = document.createElement("div");
-    div.className="flex justify-end";
-    div.innerHTML = `<div class="user-msg">${text}</div>`;
-    document.getElementById("chatMessages").appendChild(div);
-}
+    // ===== CHAT HISTORY =====
+    // Stores {role: 'user'|'model', text: '...'} for each message
+    let chatHistory = [];
+    let initialDisease = '';
+    let selectedLanguage = 'English';
 
-function addBotMessage(text){
-    const div = document.createElement("div");
-    div.className="flex justify-start";
-    div.innerHTML = `<div class="bot-msg">${text.replace(/\n/g,"<br>")}</div>`;
-    document.getElementById("chatMessages").appendChild(div);
-}
+    function selectLanguage(btn) {
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedLanguage = btn.dataset.lang;
+    }
+    window.selectLanguage = selectLanguage;
 
-document.getElementById("getRecommendationBtn").addEventListener("click",function(){
+    // ===== TYPEWRITER ENGINE =====
+    let charQueue = [];
+    let displayedMarkdown = '';
+    let isTyping = false;
+    let streamDone = false;
+    let currentBotEl = null; // the current bot message content element
+    const TYPE_SPEED = 2;
+    let userScrolledUp = false; // track if user manually scrolled up
 
-    const condition = document.getElementById("conditionInput").value.trim();
-    if(!condition){
-        alert("Please enter a condition");
-        return;
+    // Use wheel & touch events — these ONLY fire from real user interaction,
+    // never from programmatic scrollTop changes or innerHTML reflows.
+    chatContainer.addEventListener('wheel', (e) => {
+        // Scrolling up (negative deltaY) = user wants to read above
+        if (e.deltaY < 0) {
+            userScrolledUp = true;
+        } else {
+            // Scrolling down — check if they've reached the bottom
+            requestAnimationFrame(() => {
+                const distFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+                if (distFromBottom < 30) {
+                    userScrolledUp = false;
+                }
+            });
+        }
+    }, { passive: true });
+
+    // Mobile touch support
+    let touchStartY = 0;
+    chatContainer.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    chatContainer.addEventListener('touchmove', (e) => {
+        const deltaY = touchStartY - e.touches[0].clientY;
+        if (deltaY < -10) { // swiping down = scrolling up
+            userScrolledUp = true;
+        } else if (deltaY > 10) {
+            const distFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+            if (distFromBottom < 30) {
+                userScrolledUp = false;
+            }
+        }
+    }, { passive: true });
+
+    function typewriterTick() {
+        if (charQueue.length === 0) {
+            if (streamDone) {
+                isTyping = false;
+                if (currentBotEl) {
+                    currentBotEl.classList.remove('streaming-cursor');
+                    currentBotEl.innerHTML = formatMarkdown(displayedMarkdown);
+                }
+                scrollChatBottom();
+                enableFollowup();
+                return;
+            }
+            setTimeout(typewriterTick, 30);
+            return;
+        }
+        displayedMarkdown += charQueue.shift();
+        if (currentBotEl) {
+            // Save scroll position before innerHTML change to prevent reflow jump
+            const savedScroll = chatContainer.scrollTop;
+            currentBotEl.innerHTML = formatMarkdown(displayedMarkdown);
+            if (userScrolledUp) {
+                // Restore position so the user stays where they were reading
+                chatContainer.scrollTop = savedScroll;
+            }
+        }
+        scrollChatBottom();
+        setTimeout(typewriterTick, TYPE_SPEED);
     }
 
-    addUserMessage(condition);
-    document.getElementById("conditionInput").value="";
-    document.getElementById("loadingSpinner").classList.remove("hidden");
+    function scrollChatBottom() {
+        if (!userScrolledUp) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    }
 
-    fetch('{{ url_for("stream_recommendation") }}',{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-            disease: condition,
-            language: selectedLanguage
-        })
-    })
-    .then(res=>res.json())
-    .then(data=>{
-        document.getElementById("loadingSpinner").classList.add("hidden");
+    function enableFollowup() {
+        followupBar.classList.add('visible');
+        followupInput.disabled = false;
+        followupSend.disabled = false;
+        followupInput.focus();
+        newChatBtn.classList.add('visible');
+    }
 
-        if(data.error){
-            addBotMessage("Error: "+data.error);
+    function disableFollowup() {
+        followupInput.disabled = true;
+        followupSend.disabled = true;
+    }
+
+    // ===== ADD MESSAGES TO CHAT =====
+    function addUserMessage(text) {
+        const div = document.createElement('div');
+        div.className = 'chat-msg chat-msg-user';
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        scrollChatBottom();
+    }
+
+    function addBotMessage() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'chat-msg chat-msg-bot';
+
+        const label = document.createElement('div');
+        label.className = 'bot-label';
+        label.textContent = 'PulseAI';
+
+        const content = document.createElement('div');
+        content.className = 'bot-content response-area streaming-cursor';
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(content);
+        chatMessages.appendChild(wrapper);
+        scrollChatBottom();
+        return content;
+    }
+
+    // ===== SSE STREAM READER =====
+    async function readSSEStream(response) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // Keep partial line
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith('data: ')) continue;
+
+                try {
+                    const data = JSON.parse(trimmed.slice(6));
+                    if (data.error) throw new Error(data.error);
+                    if (data.done) { streamDone = true; continue; }
+                    if (data.text) { for (const ch of data.text) charQueue.push(ch); }
+                } catch (e) {
+                    if (e.message !== trimmed.slice(6)) console.warn('SSE Parse Error:', e);
+                }
+            }
+        }
+
+        // Final flush if anything left
+        if (buffer && buffer.startsWith('data: ')) {
+            try {
+                const data = JSON.parse(buffer.slice(6));
+                if (data.text) { for (const ch of data.text) charQueue.push(ch); }
+            } catch (e) { }
+        }
+
+        streamDone = true;
+    }
+
+    // ===== INITIAL RECOMMENDATION =====
+    async function generateRecommendations() {
+        const disease = inputEl.value.trim();
+        errorMessage.classList.add('hidden');
+
+        if (disease.length < 3) {
+            errorMessage.textContent = 'Please enter a valid condition (at least 3 characters).';
+            errorMessage.classList.remove('hidden');
             return;
         }
 
-        addBotMessage(data.recommendation);
-    })
-    .catch(err=>{
-        document.getElementById("loadingSpinner").classList.add("hidden");
-        addBotMessage("Something went wrong.");
-    });
-});
+        // Reset state
+        initialDisease = disease;
+        chatHistory = [];
+        chatMessages.innerHTML = '';
+        charQueue = [];
+        displayedMarkdown = '';
+        streamDone = false;
+        isTyping = false;
+        userScrolledUp = false;
+        followupBar.classList.remove('visible');
+        newChatBtn.classList.remove('visible');
+
+        // Hide initial input, show loading
+        submitBtn.disabled = true;
+        inputEl.disabled = true;
+        loadingIndicator.classList.remove('hidden');
+        chatContainer.classList.add('hidden');
+
+        // Build the initial user message
+        const userText = `Provide a comprehensive health and diet plan for: ${disease}`;
+        chatHistory.push({ role: 'user', text: userText });
+
+        // Show user bubble
+        chatContainer.classList.remove('hidden');
+        addUserMessage(disease);
+
+        try {
+            const response = await fetch(STREAM_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ disease, language: selectedLanguage })
+            });
+
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+            loadingIndicator.classList.add('hidden');
+
+            // Add bot message bubble
+            currentBotEl = addBotMessage();
+            if (!isTyping) { isTyping = true; typewriterTick(); }
+
+            await readSSEStream(response);
+
+            // Save bot response to history
+            chatHistory.push({ role: 'model', text: displayedMarkdown });
+
+        } catch (error) {
+            console.error("PulseAI Error:", error);
+            streamDone = true;
+            errorMessage.textContent = 'An error occurred. Please try again.';
+            errorMessage.classList.remove('hidden');
+            loadingIndicator.classList.add('hidden');
+            submitBtn.disabled = false;
+            inputEl.disabled = false;
+        }
+    }
+
+    // ===== FOLLOW-UP MESSAGE =====
+    async function sendFollowup() {
+        const text = followupInput.value.trim();
+        if (!text) return;
+
+        followupInput.value = '';
+        disableFollowup();
+
+        // Add user message to chat
+        addUserMessage(text);
+        chatHistory.push({ role: 'user', text: text });
+
+        // Reset typewriter
+        charQueue = [];
+        displayedMarkdown = '';
+        streamDone = false;
+        isTyping = false;
+        userScrolledUp = false;
+
+        // Add bot message bubble
+        currentBotEl = addBotMessage();
+        if (!isTyping) { isTyping = true; typewriterTick(); }
+
+        try {
+            const response = await fetch(CHAT_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: chatHistory, language: selectedLanguage })
+            });
+
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+            await readSSEStream(response);
+
+            // Save bot response
+            chatHistory.push({ role: 'model', text: displayedMarkdown });
+
+        } catch (error) {
+            console.error("Follow-up Error:", error);
+            streamDone = true;
+            if (currentBotEl) {
+                currentBotEl.classList.remove('streaming-cursor');
+                currentBotEl.innerHTML = '<p style="color:#ef4444;">Something went wrong. Try again.</p>';
+            }
+            enableFollowup();
+        }
+    }
+
+    // ===== NEW CHAT =====
+    function startNewChat() {
+        chatHistory = [];
+        chatMessages.innerHTML = '';
+        followupBar.classList.remove('visible');
+        newChatBtn.classList.remove('visible');
+        chatContainer.classList.add('hidden');
+        submitBtn.disabled = false;
+        inputEl.disabled = false;
+        inputEl.value = '';
+        inputEl.focus();
+    }
+
+    // ===== MARKDOWN PARSER =====
+    function formatMarkdown(md) {
+        if (!md) return '';
+        let html = md;
+
+        // Tables
+        html = html.replace(/(^\|.+\|\s*\n)(^\|[-\s|:]+\|\s*\n)((?:^\|.+\|\s*\n?)+)/gm, function (match, headerRow, sep, bodyRows) {
+            const headers = headerRow.trim().split('|').filter(c => c.trim() !== '');
+            let table = '<table><thead><tr>';
+            headers.forEach(h => { table += '<th>' + h.trim() + '</th>'; });
+            table += '</tr></thead><tbody>';
+            bodyRows.trim().split('\n').filter(r => r.trim()).forEach(row => {
+                const cells = row.trim().split('|').filter(c => c.trim() !== '');
+                table += '<tr>';
+                cells.forEach(c => { table += '<td>' + c.trim() + '</td>'; });
+                table += '</tr>';
+            });
+            table += '</tbody></table>';
+            return table;
+        });
+
+        // Headers
+        html = html.replace(/^###\s+(.*?)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^##\s+(.*?)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^#\s+(.*?)$/gm, '<h3>$1</h3>');
+
+        // Bold
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        // Lists
+        html = html.replace(/^[-*]\s+(.*?)$/gm, '<li>$1</li>');
+        html = html.replace(/(<li>.*?<\/li>\n?)+/g, m => '<ul>' + m + '</ul>');
+
+        // Paragraphs for standard text
+        // Split by newlines, wrap non-html lines in p
+        const lines = html.split('\n');
+        const processedLines = lines.map(line => {
+            const t = line.trim();
+            if (t === '' || t.startsWith('<h') || t.startsWith('<ul') || t.startsWith('<li') || t.startsWith('<table') || t.startsWith('<thead') || t.startsWith('<tbody') || t.startsWith('<tr') || t.startsWith('<td') || t.startsWith('<div')) return line;
+            return `<p>${line}</p>`;
+        });
+
+        return processedLines.join('\n');
+    }
+
+    // ===== EXPOSE GLOBALS =====
+    window.generateRecommendations = generateRecommendations;
+    window.sendFollowup = sendFollowup;
+    window.startNewChat = startNewChat;
+
+    // ===== INIT =====
+    window.onload = () => {
+        console.log("PulseAI Initialized (Chat Mode).");
+        // Ensure input is focused
+        const inp = document.getElementById('disease-input');
+        if (inp) inp.focus();
+    };
 </script>
 {% endblock %}
