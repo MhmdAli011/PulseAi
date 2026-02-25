@@ -148,6 +148,8 @@ body {
     border: none;
     cursor: pointer;
     transition: var(--transition);
+    text-decoration: none;
+    display: inline-block;
 }
 
 .btn-primary {
@@ -170,6 +172,20 @@ body {
 
 .btn-secondary:hover {
     background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Make hero buttons identical (Solid White) */
+.hero-section .btn-primary,
+.hero-section .btn-secondary {
+    background-color: white;
+    color: var(--primary-color);
+    border: 2px solid white;
+}
+
+.hero-section .btn-primary:hover,
+.hero-section .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.9);
     transform: translateY(-2px);
 }
 
