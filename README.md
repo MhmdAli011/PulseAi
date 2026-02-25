@@ -39,14 +39,12 @@ Built-in support for multiple languages:
 
 ## 📸 UI Showcase
 
-![Homepage Showcase](file:///C:/Users/moham/.gemini/antigravity/brain/6eb3b379-789e-432a-9ec7-36fa7a1871d2/media__1772043960682.png)
-*Modern Landing Page with Hero Section*
+### Homepage
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2822f5b1-bf76-419b-88f6-0fb2039e2d6f" />
 
-![PulseAI Branding](file:///C:/Users/moham/.gemini/antigravity/brain/6eb3b379-789e-432a-9ec7-36fa7a1871d2/media__1772044159879.png)
-*Sleek Navbar and Branding*
 
-![Dashboard UI](file:///C:/Users/moham/.gemini/antigravity/brain/6eb3b379-789e-432a-9ec7-36fa7a1871d2/media__1772046307663.png)
-*Dashboard featuring the Gemini-powered Recommendation Input*
+### Dashboard
+<img width="1231" height="627" alt="image" src="https://github.com/user-attachments/assets/1e3027a9-9e43-4e2f-86c0-4424404a9dba" />
 
 ---
 
